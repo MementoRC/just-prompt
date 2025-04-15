@@ -92,6 +92,9 @@ def test_list_models_deepseek():
 
 def test_list_models_ollama():
     """Test listing Ollama models with real API call."""
+    if not os.environ.get("OLLAMA_HOST"):
+        pytest.skip("OLLAMA_HOST not available")
+
     # Test with full provider name
     models = list_models("ollama")
     
@@ -140,9 +143,10 @@ def test_list_models_with_short_names():
         assert len(models) > 0
     
     # Ollama - short name "l"
-    models = list_models("l")
-    assert isinstance(models, list)
-    assert len(models) > 0
+    if os.environ.get("OLLAMA_HOST"):
+        models = list_models("l")
+        assert isinstance(models, list)
+        assert len(models) > 0
 
 def test_list_models_invalid_provider():
     """Test with invalid provider name."""
