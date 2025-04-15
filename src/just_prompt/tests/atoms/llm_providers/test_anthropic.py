@@ -5,7 +5,6 @@ Tests for Anthropic provider.
 import pytest
 import os
 from dotenv import load_dotenv
-from just_prompt.atoms.llm_providers import anthropic
 
 # Load environment variables
 load_dotenv()
@@ -14,6 +13,7 @@ load_dotenv()
 if not os.environ.get("ANTHROPIC_API_KEY"):
     pytest.skip("Anthropic API key not available", allow_module_level=True)
 
+from just_prompt.atoms.llm_providers import anthropic
 
 def test_list_models():
     """Test listing Anthropic models."""

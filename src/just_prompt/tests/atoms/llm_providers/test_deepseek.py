@@ -5,7 +5,6 @@ Tests for DeepSeek provider.
 import pytest
 import os
 from dotenv import load_dotenv
-from just_prompt.atoms.llm_providers import deepseek
 
 # Load environment variables
 load_dotenv()
@@ -14,6 +13,7 @@ load_dotenv()
 if not os.environ.get("DEEPSEEK_API_KEY"):
     pytest.skip("DeepSeek API key not available", allow_module_level=True)
 
+from just_prompt.atoms.llm_providers import deepseek
 
 def test_list_models():
     """Test listing DeepSeek models."""

@@ -13,6 +13,7 @@ from just_prompt.molecules.prompt_from_file_to_file import prompt_from_file_to_f
 load_dotenv()
 
 
+@pytest.mark.skipif(not os.environ.get("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
 def test_directory_creation_and_file_writing():
     """Test that the output directory is created and files are written with real API responses."""
     # Create temporary input file with a simple question

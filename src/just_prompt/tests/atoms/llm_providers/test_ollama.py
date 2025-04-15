@@ -5,11 +5,14 @@ Tests for Ollama provider.
 import pytest
 import os
 from dotenv import load_dotenv
-from just_prompt.atoms.llm_providers import ollama
 
 # Load environment variables
 load_dotenv()
 
+if not os.environ.get("OLLAMA_HOST"):
+    pytest.skip("OLLAMA_HOST not available", allow_module_level=True)
+
+from just_prompt.atoms.llm_providers import ollama
 
 def test_list_models():
     """Test listing Ollama models."""
