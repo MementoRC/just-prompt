@@ -5,7 +5,7 @@ Google Gemini provider implementation.
 import os
 from typing import List
 import logging
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -15,7 +15,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Initialize Gemini
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 
 def prompt(text: str, model: str) -> str:
@@ -32,8 +32,11 @@ def prompt(text: str, model: str) -> str:
     try:
         logger.info(f"Sending prompt to Gemini model: {model}")
         
+        # Create generative model
+        gemini_model = genai.GenerativeModel(model_name=model)
+
         # Generate content
-        response = client.models.generate_content(model=model, contents=text)
+        response = gemini_model.generate_content(text)
         
         return response.text
     except Exception as e:
