@@ -56,7 +56,8 @@ def test_validate_provider_api_keys():
         "GROQ_API_KEY": "test-key",  
         # GEMINI_API_KEY not defined
         "DEEPSEEK_API_KEY": "test-key",
-        "OLLAMA_HOST": "http://localhost:11434"
+        "OLLAMA_HOST": "http://localhost:11434",
+        "OPENROUTER_API_KEY": "test-key",
     }):
         # Call the function to validate provider API keys
         availability = validate_provider_api_keys()
@@ -73,7 +74,7 @@ def test_validate_provider_api_keys():
         assert "ollama" in availability
         
         # Make sure all providers are included in the result
-        assert set(availability.keys()) == {"openai", "anthropic", "gemini", "groq", "deepseek", "ollama"}
+        assert set(availability.keys()) == {"openai", "anthropic", "gemini", "groq", "deepseek", "ollama", "openrouter"}
 
 
 def test_validate_provider_api_keys_none():
@@ -85,7 +86,7 @@ def test_validate_provider_api_keys_none():
         
         # Check that all providers are marked as unavailable
         assert all(status is False for status in availability.values())
-        assert set(availability.keys()) == {"openai", "anthropic", "gemini", "groq", "deepseek", "ollama"}
+        assert set(availability.keys()) == {"openai", "anthropic", "gemini", "groq", "deepseek", "ollama", "openrouter"}
 
 
 def test_print_provider_availability():
