@@ -56,6 +56,7 @@ def test_route_list_models(mock_import_module):
         ModelRouter.route_list_models("unknown")
 
 
+@pytest.mark.skipif(not os.environ.get("ANTHROPIC_API_KEY"), reason="ANTHROPIC_API_KEY not set")
 def test_validate_and_correct_model_shorthand():
     """Test validation and correction of shorthand model names like a:sonnet.3.7."""
     try:
