@@ -17,9 +17,6 @@ logger = logging.getLogger(__name__)
 # OpenRouter API endpoint
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1"
 
-# API key from environment
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-
 
 def prompt(text: str, model: str) -> str:
     """
@@ -32,7 +29,7 @@ def prompt(text: str, model: str) -> str:
     Returns:
         Response string from the model
     """
-    if not OPENROUTER_API_KEY:
+    if not (OPENROUTER_API_KEY := os.environ.get("OPENROUTER_API_KEY")):
         raise ValueError("OpenRouter API key not found in environment variables")
 
     try:
@@ -40,7 +37,7 @@ def prompt(text: str, model: str) -> str:
         
         headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         
         data = {
@@ -73,7 +70,7 @@ def list_models() -> List[str]:
     Returns:
         List of model names
     """
-    if not OPENROUTER_API_KEY:
+    if not (OPENROUTER_API_KEY := os.environ.get("OPENROUTER_API_KEY")):
         raise ValueError("OpenRouter API key not found in environment variables")
 
     try:

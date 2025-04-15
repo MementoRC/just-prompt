@@ -11,6 +11,7 @@ import logging
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
+# Skip tests if API key not available
 # Import the module to test
 from just_prompt.atoms.llm_providers import openrouter
 
@@ -115,7 +116,7 @@ def test_prompt_without_api_key():
         del os.environ["OPENROUTER_API_KEY"]
     
     # Test that it raises an exception
-    with pytest.raises(ValueError, match="OpenRouter API key not found"):
+    with pytest.raises(ValueError, match="OpenRouter API key not found in environment variables"):
         openrouter.prompt("Test prompt", "anthropic/claude-3-opus")
     
     # Restore the original environment
