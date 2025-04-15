@@ -10,6 +10,7 @@ from just_prompt.molecules.prompt import prompt
 # Load environment variables
 load_dotenv()
 
+@pytest.mark.skipif(not os.environ.get("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
 def test_prompt_basic():
     """Test basic prompt functionality with a real API call."""
     # Define a simple test case
