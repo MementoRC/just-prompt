@@ -18,6 +18,7 @@ def test_nonexistent_file():
         prompt_from_file("/non/existent/file.txt", ["o:gpt-4o-mini"])
 
 
+@pytest.mark.skipif(not os.environ.get("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set")
 def test_file_read():
     """Test that the file is read correctly and processes with real API call."""
     # Create temporary file with a simple question
