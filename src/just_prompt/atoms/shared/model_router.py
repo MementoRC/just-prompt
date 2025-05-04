@@ -28,8 +28,8 @@ class ModelRouter:
         Returns:
             Validated and potentially corrected model name
         """
-        # Early return for our thinking token model to bypass validation
-        if "claude-3-7-sonnet-20250219" in model_name:
+        # Early return for our thinking token models to bypass validation
+        if "claude-3-7-sonnet-20250219" in model_name or "gemini-2.5-flash-preview-04-17" in model_name:
             return model_name
 
         try:

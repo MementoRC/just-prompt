@@ -18,7 +18,8 @@ logging.basicConfig(
 load_dotenv()
 
 # Default model constants
-DEFAULT_MODEL = "anthropic:claude-3-7-sonnet-20250219"
+# DEFAULT_MODEL = "anthropic:claude-3-7-sonnet-20250219"
+DEFAULT_MODEL = "gemini:gemini-2.5-pro-preview-03-25"
 
 
 def split_provider_and_model(model_string: str) -> Tuple[str, str]:

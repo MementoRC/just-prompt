@@ -16,7 +16,7 @@ class ModelProviders(Enum):
     DEEPSEEK = ("deepseek", "d")
     OLLAMA = ("ollama", "l")
     OPENROUTER = ("openrouter", "r")
-    
+
     def __init__(self, full_name, short_name):
         self.full_name = full_name
         self.short_name = short_name

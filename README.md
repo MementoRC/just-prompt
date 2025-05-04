@@ -1,6 +1,11 @@
 # Just Prompt - A lightweight MCP server for LLM providers
 
-`just-prompt` is a Model Control Protocol (MCP) server that provides a unified interface to various Large Language Model (LLM) providers including OpenAI, Anthropic, Google Gemini, Groq, DeepSeek, and Ollama.
+`just-prompt` is a Model Control Protocol (MCP) server that provides a unified interface to various Large Language Model (LLM) providers including OpenAI, Anthropic, Google Gemini, Groq, DeepSeek, and Ollama. See how we use the `ceo_and_board` tool to make [hard decisions easy with o3 here](https://youtu.be/LEMLntjfihA).
+
+<img src="images/just-prompt-logo.png" alt="Just Prompt Logo" width="700" height="auto">
+
+<img src="images/o3-as-a-ceo.png" alt="Just Prompt Logo" width="700" height="auto">
+
 
 ## Tools
 
@@ -21,6 +26,13 @@ The following MCP tools are available in the server:
     - `file`: Path to the file containing the prompt
     - `models_prefixed_by_provider` (optional): List of models with provider prefixes. If not provided, uses default models.
     - `output_dir` (default: "."): Directory to save the response markdown files to
+
+- **`ceo_and_board`**: Send a prompt to multiple 'board member' models and have a 'CEO' model make a decision based on their responses
+  - Parameters:
+    - `file`: Path to the file containing the prompt
+    - `models_prefixed_by_provider` (optional): List of models with provider prefixes to act as board members. If not provided, uses default models.
+    - `output_dir` (default: "."): Directory to save the response files and CEO decision
+    - `ceo_model` (default: "openai:o3"): Model to use for the CEO decision in format "provider:model"
 
 - **`list_providers`**: List all available LLM providers
   - Parameters: None
@@ -97,8 +109,9 @@ OLLAMA_HOST=http://localhost:11434
 ```
 
 ## Claude Code Installation
+> In all these examples, replace the directory with the path to the just-prompt directory.
 
-Default model set to `anthropic:claude-3-7-sonnet-20250219`.
+Default models set to `openai:o3:high`, `openai:o4-mini:high`, `anthropic:claude-3-7-sonnet-20250219:4k`, `gemini:gemini-2.5-pro-preview-03-25`, and `gemini:gemini-2.5-flash-preview-04-17`.
 
 If you use Claude Code right out of the repository you can see in the .mcp.json file we set the default models to...
 
@@ -114,7 +127,7 @@ If you use Claude Code right out of the repository you can see in the .mcp.json 
         "run",
         "just-prompt",
         "--default-models",
-        "anthropic:claude-3-7-sonnet-20250219,openai:o3-mini,gemini:gemini-2.5-pro-exp-03-25"
+        "openai:o3:high,openai:o4-mini:high,anthropic:claude-3-7-sonnet-20250219:4k,gemini:gemini-2.5-pro-preview-03-25,gemini:gemini-2.5-flash-preview-04-17"
       ],
       "env": {}
     }
@@ -157,14 +170,14 @@ With multiple default models:
 ```
 {
     "command": "uv",
-    "args": ["--directory", ".", "run", "just-prompt", "--default-models", "anthropic:claude-3-7-sonnet-20250219,openai:gpt-4o,gemini:gemini-2.5-pro-exp-03-25"]
+    "args": ["--directory", ".", "run", "just-prompt", "--default-models", "openai:o3:high,openai:o4-mini:high,anthropic:claude-3-7-sonnet-20250219:4k,gemini:gemini-2.5-pro-preview-03-25,gemini:gemini-2.5-flash-preview-04-17"]
 }
 ```
 
 ### Using `mcp add` with project scope
 
 ```bash
-# With default model (anthropic:claude-3-7-sonnet-20250219)
+# With default models
 claude mcp add just-prompt -s project \
   -- \
     uv --directory . \
@@ -180,7 +193,7 @@ claude mcp add just-prompt -s project \
 claude mcp add just-prompt -s user \
   -- \
   uv --directory . \
-  run just-prompt --default-models "anthropic:claude-3-7-sonnet-20250219:4k,openai:o3-mini,gemini:gemini-2.0-flash,openai:gpt-4.5-preview,gemini:gemini-2.5-pro-exp-03-25"
+  run just-prompt --default-models "openai:o3:high,openai:o4-mini:high,anthropic:claude-3-7-sonnet-20250219:4k,gemini:gemini-2.5-pro-preview-03-25,gemini:gemini-2.5-flash-preview-04-17:4k"
 ```
 
 
@@ -199,12 +212,18 @@ uv run pytest
 ```
 .
 ├── ai_docs/                   # Documentation for AI model details
+│   ├── extending_thinking_sonny.md
 │   ├── llm_providers_details.xml
+│   ├── openai-reasoning-effort.md
 │   └── pocket-pick-mcp-server-example.xml
+├── example_outputs/           # Example outputs from different models
 ├── list_models.py             # Script to list available LLM models
+├── prompts/                   # Example prompt files
 ├── pyproject.toml             # Python project configuration
 ├── specs/                     # Project specifications
-│   └── init-just-prompt.md
+│   ├── init-just-prompt.md
+│   ├── new-tool-llm-as-a-ceo.md
+│   └── oai-reasoning-levels.md
 ├── src/                       # Source code directory
 │   └── just_prompt/
 │       ├── __init__.py
@@ -223,6 +242,7 @@ uv run pytest
 │       │       ├── utils.py
 │       │       └── validator.py
 │       ├── molecules/         # Higher-level functionality
+│       │   ├── ceo_and_board_prompt.py
 │       │   ├── list_models.py
 │       │   ├── list_providers.py
 │       │   ├── prompt.py
@@ -234,12 +254,43 @@ uv run pytest
 │           │   ├── llm_providers/
 │           │   └── shared/
 │           └── molecules/     # Tests for molecules
+│               ├── test_ceo_and_board_prompt.py
+│               ├── test_list_models.py
+│               ├── test_list_providers.py
+│               ├── test_prompt.py
+│               ├── test_prompt_from_file.py
+│               └── test_prompt_from_file_to_file.py
+└── ultra_diff_review/         # Diff review outputs
 ```
 
 ## Context Priming
-READ README.md, then run git ls-files, and 'eza --git-ignore --tree' to understand the context of the project.
+READ README.md, pyproject.toml, then run git ls-files, and 'eza --git-ignore --tree' to understand the context of the project.
 
-## Thinking Tokens with Claude
+# Reasoning Effort with OpenAI o‑Series
+
+For OpenAI o‑series reasoning models (`o4-mini`, `o3-mini`, `o3`) you can
+control how much *internal* reasoning the model performs before producing a
+visible answer.
+
+Append one of the following suffixes to the model name (after the *provider*
+prefix):
+
+* `:low`   – minimal internal reasoning (faster, cheaper)
+* `:medium` – balanced (default if omitted)
+* `:high`  – thorough reasoning (slower, more tokens)
+
+Examples:
+
+* `openai:o4-mini:low`
+* `o:o4-mini:high`
+
+When a reasoning suffix is present, **just‑prompt** automatically switches to
+the OpenAI *Responses* API (when available) and sets the corresponding
+`reasoning.effort` parameter.  If the installed OpenAI SDK is older, it
+gracefully falls back to the Chat Completions endpoint and embeds an internal
+system instruction to approximate the requested effort level.
+
+# Thinking Tokens with Claude
 
 The Anthropic Claude model `claude-3-7-sonnet-20250219` supports extended thinking capabilities using thinking tokens. This allows Claude to do more thorough thought processes before answering.
 
@@ -248,16 +299,24 @@ You can enable thinking tokens by adding a suffix to the model name in this form
 - `anthropic:claude-3-7-sonnet-20250219:4k` - Use 4096 thinking tokens
 - `anthropic:claude-3-7-sonnet-20250219:8000` - Use 8000 thinking tokens
 
-Example usage:
-```bash
-# Using 4k thinking tokens with Claude
-uv run just-prompt prompt "Analyze the advantages and disadvantages of quantum computing vs classical computing" \
-  --models-prefixed-by-provider anthropic:claude-3-7-sonnet-20250219:4k
-```
-
 Notes:
 - Thinking tokens are only supported for the `claude-3-7-sonnet-20250219` model
 - Valid thinking token budgets range from 1024 to 16000
+- Values outside this range will be automatically adjusted to be within range
+- You can specify the budget with k notation (1k, 4k, etc.) or with exact numbers (1024, 4096, etc.)
+
+# Thinking Budget with Gemini
+
+The Google Gemini model `gemini-2.5-flash-preview-04-17` supports extended thinking capabilities using thinking budget. This allows Gemini to perform more thorough reasoning before providing a response.
+
+You can enable thinking budget by adding a suffix to the model name in this format:
+- `gemini:gemini-2.5-flash-preview-04-17:1k` - Use 1024 thinking budget
+- `gemini:gemini-2.5-flash-preview-04-17:4k` - Use 4096 thinking budget
+- `gemini:gemini-2.5-flash-preview-04-17:8000` - Use 8000 thinking budget
+
+Notes:
+- Thinking budget is only supported for the `gemini-2.5-flash-preview-04-17` model
+- Valid thinking budget range from 0 to 24576
 - Values outside this range will be automatically adjusted to be within range
 - You can specify the budget with k notation (1k, 4k, etc.) or with exact numbers (1024, 4096, etc.)
 

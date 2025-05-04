@@ -26,7 +26,7 @@ def test_list_models():
 
 def test_prompt():
     """Test sending prompt to Groq."""
-    response = groq.prompt("What is the capital of France?", "qwen-2.5-32b")
+    response = groq.prompt("What is the capital of France?", "qwen-qwq-32b")
     assert isinstance(response, str)
     assert len(response) > 0
     assert "paris" in response.lower() or "Paris" in response

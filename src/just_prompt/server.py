@@ -5,6 +5,7 @@ MCP server for just-prompt.
 import asyncio
 import logging
 import os
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -15,6 +16,7 @@ from .atoms.shared.validator import print_provider_availability
 from .molecules.prompt import prompt
 from .molecules.prompt_from_file import prompt_from_file
 from .molecules.prompt_from_file_to_file import prompt_from_file_to_file
+from .molecules.ceo_and_board_prompt import ceo_and_board_prompt, DEFAULT_CEO_MODEL
 from .molecules.list_providers import list_providers as list_providers_func
 from .molecules.list_models import list_models as list_models_func
 from dotenv import load_dotenv
@@ -35,6 +37,7 @@ class JustPromptTools:
     PROMPT = "prompt"
     PROMPT_FROM_FILE = "prompt_from_file"
     PROMPT_FROM_FILE_TO_FILE = "prompt_from_file_to_file"
+    CEO_AND_BOARD = "ceo_and_board"
     LIST_PROVIDERS = "list_providers"
     LIST_MODELS = "list_models"
 
@@ -69,6 +72,21 @@ class ListProvidersSchema(BaseModel):
 
 class ListModelsSchema(BaseModel):
     provider: str = Field(..., description="Provider to list models for (e.g., 'openai' or 'o')")
+    
+class CEOAndBoardSchema(BaseModel):
+    file: str = Field(..., description="Path to the file containing the prompt")
+    models_prefixed_by_provider: Optional[List[str]] = Field(
+        None, 
+        description="List of models with provider prefixes to act as board members. If not provided, uses default models."
+    )
+    output_dir: str = Field(
+        default=".", 
+        description="Directory to save the response files and CEO decision"
+    )
+    ceo_model: str = Field(
+        default=DEFAULT_CEO_MODEL,
+        description="Model to use for the CEO decision in format 'provider:model'"
+    )
 
 
 async def serve(default_models: str = DEFAULT_MODEL) -> None:
@@ -115,6 +133,11 @@ async def serve(default_models: str = DEFAULT_MODEL) -> None:
                 name=JustPromptTools.PROMPT_FROM_FILE_TO_FILE,
                 description="Send a prompt from a file to multiple LLM models and save responses to files",
                 inputSchema=PromptFromFileToFileSchema.schema(),
+            ),
+            Tool(
+                name=JustPromptTools.CEO_AND_BOARD,
+                description="Send a prompt to multiple 'board member' models and have a 'CEO' model make a decision based on their responses",
+                inputSchema=CEOAndBoardSchema.schema(),
             ),
             Tool(
                 name=JustPromptTools.LIST_PROVIDERS,
@@ -189,6 +212,27 @@ async def serve(default_models: str = DEFAULT_MODEL) -> None:
                     type="text",
                     text=f"Models for provider '{arguments['provider']}':\n" + 
                          "\n".join([f"- {model}" for model in models])
+                )]
+                
+            elif name == JustPromptTools.CEO_AND_BOARD:
+                file_path = arguments["file"]
+                output_dir = arguments.get("output_dir", ".")
+                models_to_use = arguments.get("models_prefixed_by_provider")
+                ceo_model = arguments.get("ceo_model", DEFAULT_CEO_MODEL)
+                
+                ceo_decision_file = ceo_and_board_prompt(
+                    from_file=file_path,
+                    output_dir=output_dir,
+                    models_prefixed_by_provider=models_to_use,
+                    ceo_model=ceo_model
+                )
+                
+                # Get the CEO prompt file path
+                ceo_prompt_file = str(Path(ceo_decision_file).parent / "ceo_prompt.xml")
+                
+                return [TextContent(
+                    type="text",
+                    text=f"Board responses and CEO decision saved.\nCEO prompt file: {ceo_prompt_file}\nCEO decision file: {ceo_decision_file}"
                 )]
                 
             else:
